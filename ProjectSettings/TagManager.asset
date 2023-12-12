@@ -6,6 +6,7 @@ TagManager:
   tags:
   - apple
   - tree
+  - plane
   layers:
   - Default
   - TransparentFX

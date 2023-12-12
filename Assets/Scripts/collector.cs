@@ -19,6 +19,11 @@ public class collector : MonoBehaviour
     bool s = false;
     int total;
 
+    void Start(){
+        total = 3;
+    }
+
+    
     void Update()
     {
         if (Input.touchCount > 0){
@@ -41,13 +46,17 @@ public class collector : MonoBehaviour
                         }
                         else if (hit.collider.tag == "tree" && script.collected()) {
                             script.reset();
+                            total++;
+                            spawn();
                         }
                     }
                     else{
-                        Vector3 pos = ray.direction * hit.distance;
+                        s = true;
+                        script.star();
+                        Vector3 pos = ray.direction * hit.distance + new Vector3(0, 2, 0);
                         tre = Instantiate(tree, pos, Quaternion.identity);
                         tre.transform.SetParent(par.transform);
-                        g = Instantiate(issac, pos * 0.8f, Quaternion.identity);
+                        g = Instantiate(issac, pos * 0.5f, Quaternion.identity);
                         spawn();
                     }
                 }
@@ -62,7 +71,7 @@ public class collector : MonoBehaviour
         float zmax = plane.position.z + .5f * plane.localScale.z;
 
         for (int i = 0; i < total; i++) {
-            g = Instantiate(apple, new Vector3(Random.Range(xmin, xmax), 5, Random.Range(zmin, zmax)), Quaternion.identity);
+            g = Instantiate(apple, new Vector3(Random.Range(xmin, xmax), 1, Random.Range(zmin, zmax)), Quaternion.identity);
             g.transform.SetParent(par.transform);
             apples.Add(g);
         }
