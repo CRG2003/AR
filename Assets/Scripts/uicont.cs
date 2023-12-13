@@ -37,29 +37,25 @@ public class uicont : MonoBehaviour
         }
     }
 
-    public void star(){
+    public void star(){ // starts game UI
         started = true;
     }
 
-    public bool begun(){
-        return started; 
-    }
-
-    public void incriment(){
+    public void incriment(){ // increases score
         scr++;
     }
 
-    public void reset(){
+    public void res(){ // resets score and incriments total
         scr = 0;
         total++;
     }
 
-    public void showMessage(string m) {
+    public void showMessage(string m) { // displays custom message
         message = m;
-        messageTime = 5;
+        messageTime = 4;
     }
 
-    public bool collected() {
+    public bool collected() { // returns if all apples have been collected
         if (scr == total) return true;
         else return false;
     }

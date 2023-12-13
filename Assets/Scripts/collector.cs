@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Transactions;
 using Unity.VisualScripting;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 
@@ -9,14 +10,14 @@ public class collector : MonoBehaviour
 {
     private List<ARRaycastHit> rayhits = new List<ARRaycastHit>();
     public ARRaycastManager rayman;
-    public GameObject apple, par, tree, issac;
+    public GameObject apple, par, tree, issac, pointer;
     GameObject g, tre;
     List<GameObject> apples = new List<GameObject>();
     Transform plane;
 
     public uicont script;
 
-    bool s = false;
+    bool s = false, ran = false, helped = false;
     int total;
 
     void Start(){
@@ -26,6 +27,10 @@ public class collector : MonoBehaviour
     
     void Update()
     {
+        if (!ran && script.collected()) {
+            script.showMessage("Now put the apples back on the tree");
+            ran = true;
+        }
         if (Input.touchCount > 0){
             var touch = Input.GetTouch(0);
             if (touch.phase == TouchPhase.Ended){
@@ -34,29 +39,43 @@ public class collector : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit)) {
                     if (s){
-                        if (hit.collider.tag == "apple")
-                        {
-                            if (hit.distance < 1.5f) {
+                        // hit apple
+                        if (hit.collider.tag == "apple") {
+                            if (hit.distance < 1.5f) { 
                                 Destroy(hit.collider.gameObject);
                                 script.incriment();
                             }
-                            else {
-                                script.showMessage("Apple too far away?");
+                            else {  
+                                script.showMessage("Apple too far away");
                             }
                         }
+                        // hit tree with all apples
                         else if (hit.collider.tag == "tree" && script.collected()) {
-                            script.reset();
-                            total++;
-                            spawn();
+                            if (total < 5) {
+                                ran = false;
+                                script.res();
+                                total++;
+                                spawn();
+                                script.SendMessage("Oh no! More apples fell off, go collect them");
+                            }
+                            else {
+                                script.SendMessage("Congratulations! You helped Issac Newton Discover Gravity!");
+                            }
                         }
                     }
-                    else{
+                    // first tap starts game
+                    else {
+                        script.showMessage("Collect the apples to help Issac Newton discover gravity!");
                         s = true;
                         script.star();
+                        plane = hit.collider.transform;
                         Vector3 pos = ray.direction * hit.distance + new Vector3(0, 2, 0);
+
                         tre = Instantiate(tree, pos, Quaternion.identity);
-                        tre.transform.SetParent(par.transform);
-                        g = Instantiate(issac, pos * 0.5f, Quaternion.identity);
+                        g = Instantiate(issac, pos, Quaternion.identity);
+                        g.transform.LookAt(GameObject.Find("Main Camera").transform.position);
+                        g.transform.rotation = new Quaternion(-90, g.transform.rotation.y, g.transform.rotation.z, 1);
+                        g.transform.position += g.transform.forward * 2;
                         spawn();
                     }
                 }
@@ -65,15 +84,29 @@ public class collector : MonoBehaviour
     }
 
     void spawn(){
-        float xmin = plane.position.x - .5f * plane.localScale.x;
-        float xmax = plane.position.x + .5f * plane.localScale.x;
-        float zmin = plane.position.z - .5f * plane.localScale.z;
-        float zmax = plane.position.z + .5f * plane.localScale.z;
+        float xmin = plane.position.x - plane.localScale.x;
+        float xmax = plane.position.x + plane.localScale.x;
+        float zmin = plane.position.z - plane.localScale.z;
+        float zmax = plane.position.z + plane.localScale.z;
 
         for (int i = 0; i < total; i++) {
-            g = Instantiate(apple, new Vector3(Random.Range(xmin, xmax), 1, Random.Range(zmin, zmax)), Quaternion.identity);
+            g = Instantiate(apple, new Vector3(Random.Range(xmin, xmax), 5, Random.Range(zmin, zmax)), Quaternion.identity);
             g.transform.SetParent(par.transform);
             apples.Add(g);
+        }
+    }
+
+    public void help() {
+        foreach (GameObject i in apples) {
+            if (!helped) {
+                g = Instantiate(pointer, i.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
+                g.transform.SetParent(i.transform);
+                helped = true;
+            }
+            else {
+                Destroy(i.GetNamedChild("pointer"));
+                helped = false;
+            }
         }
     }
 }
