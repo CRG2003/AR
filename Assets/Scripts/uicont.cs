@@ -8,7 +8,7 @@ public class uicont : MonoBehaviour
 {
     public TMP_Text score, intro;
     public Slider bar;
-    public bool started = false;
+    bool started = false, end = false;
     int total;
     int scr;
     float messageTime;
@@ -35,6 +35,10 @@ public class uicont : MonoBehaviour
         if (messageTime > 0) {
             intro.text = message;
         }
+        else if (end) {
+            Application.Quit();
+        }
+
     }
 
     public void star(){ // starts game UI
@@ -58,5 +62,9 @@ public class uicont : MonoBehaviour
     public bool collected() { // returns if all apples have been collected
         if (scr == total) return true;
         else return false;
+    }
+
+    public void final() {
+        end = true;
     }
 }

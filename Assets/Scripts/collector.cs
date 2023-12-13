@@ -12,7 +12,7 @@ public class collector : MonoBehaviour
     public ARRaycastManager rayman;
     public GameObject apple, par, tree, issac, pointer;
     GameObject g, tre;
-    List<GameObject> apples = new List<GameObject>();
+    List<GameObject> apples = new List<GameObject>(), pointers = new List<GameObject>();
     Transform plane;
 
     public uicont script;
@@ -51,31 +51,32 @@ public class collector : MonoBehaviour
                         }
                         // hit tree with all apples
                         else if (hit.collider.tag == "tree" && script.collected()) {
-                            if (total < 5) {
+                            if (total == 3) {
+                                script.showMessage("More apples fell off, go collect them");
                                 ran = false;
                                 script.res();
                                 total++;
                                 spawn();
-                                script.SendMessage("Oh no! More apples fell off, go collect them");
                             }
-                            else {
-                                script.SendMessage("Congratulations! You helped Issac Newton Discover Gravity!");
+                            else{
+                                script.showMessage("Congrats! you helped discover gravity");
+                                script.final();
                             }
                         }
                     }
                     // first tap starts game
                     else {
-                        script.showMessage("Collect the apples to help Issac Newton discover gravity!");
+                        script.showMessage("Collect the apples to help Issac Newton discover gravity");
                         s = true;
                         script.star();
                         plane = hit.collider.transform;
                         Vector3 pos = ray.direction * hit.distance + new Vector3(0, 2, 0);
 
                         tre = Instantiate(tree, pos, Quaternion.identity);
-                        g = Instantiate(issac, pos, Quaternion.identity);
+                        g = Instantiate(issac, pos + new Vector3(0, -0.6f, 0), Quaternion.identity);
                         g.transform.LookAt(GameObject.Find("Main Camera").transform.position);
-                        g.transform.rotation = new Quaternion(-90, g.transform.rotation.y, g.transform.rotation.z, 1);
-                        g.transform.position += g.transform.forward * 2;
+                        g.transform.position += g.transform.forward;
+                        g.transform.eulerAngles = new Vector3(-90, g.transform.eulerAngles.y, g.transform.eulerAngles.z);
                         spawn();
                     }
                 }
@@ -90,23 +91,28 @@ public class collector : MonoBehaviour
         float zmax = plane.position.z + plane.localScale.z;
 
         for (int i = 0; i < total; i++) {
-            g = Instantiate(apple, new Vector3(Random.Range(xmin, xmax), 5, Random.Range(zmin, zmax)), Quaternion.identity);
+            g = Instantiate(apple, new Vector3(Random.Range(xmin, xmax), 2f, Random.Range(zmin, zmax)), Quaternion.identity);
             g.transform.SetParent(par.transform);
             apples.Add(g);
         }
     }
 
     public void help() {
-        foreach (GameObject i in apples) {
-            if (!helped) {
+        if (!helped) {
+            helped = true;
+            foreach (GameObject i in apples) {
                 g = Instantiate(pointer, i.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
                 g.transform.SetParent(i.transform);
-                helped = true;
-            }
-            else {
-                Destroy(i.GetNamedChild("pointer"));
-                helped = false;
+                pointers.Add(g);
+                g.transform.eulerAngles = new Vector3(180, g.transform.eulerAngles.y, g.transform.eulerAngles.z);
             }
         }
+        else {
+            foreach (GameObject i in pointers) {
+                Destroy(i.gameObject);
+            }
+            pointers.Clear();
+        }
+        
     }
 }
